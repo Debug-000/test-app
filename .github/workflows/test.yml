@@ -3,7 +3,7 @@ name: Deploy Admin to DigitalOcean Kubernetes
 on:
   push:
     branches:
-      - main # Runs when you push to main
+      - main
 
 jobs:
   build-and-push:
@@ -17,8 +17,8 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t registry.digitalocean.com/labrago/frontend:v1.1 -f ./admin/Dockerfile ./admin
-          docker push registry.digitalocean.com/labrago/frontend:v1.1
+          docker build -t registry.digitalocean.com/testcluster/test:v1.1 -f ./Dockerfile ./
+          docker push registry.digitalocean.com/testcluster/test:v1.1
 
   deploy:
     needs: build-and-push
@@ -31,7 +31,7 @@ jobs:
         run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
 
       - name: Set Kubernetes Context
-        run: doctl kubernetes cluster kubeconfig save your-cluster-name
+        run: doctl kubernetes cluster kubeconfig save k8s-test-cluster
 
       - name: Restart Kubernetes Deployment
-        run: kubectl rollout restart deployment frontend-deployment
+        run: kubectl rollout restart deployment test-deployment
