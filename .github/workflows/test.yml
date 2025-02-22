@@ -34,6 +34,12 @@ jobs:
           # Install doctl via Snap
           sudo snap install doctl
 
+          # Connect the kube-config plug to allow access to the kube config
+          sudo snap connect doctl:kube-config
+
+          # Ensure the .kube directory exists
+          mkdir -p $HOME/.kube
+
           # Verify installation
           doctl version
 
