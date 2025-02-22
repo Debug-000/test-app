@@ -24,11 +24,18 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      # Install DigitalOcean CLI
+      # Install jq (used for parsing JSON)
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      # Get the latest release URL and Install DigitalOcean CLI
       - name: Install DigitalOcean CLI
         run: |
           # Get the latest release URL from GitHub API
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/digitalocean/doctl/releases/latest | jq -r '.assets[] | select(.name | test("doctl-linux-amd64.tar.gz")) | .browser_download_url')
+
+          # Check if the URL is set
+          echo "Latest release URL: $LATEST_RELEASE"
 
           # Download and install doctl
           curl -sL $LATEST_RELEASE -o doctl.tar.gz
