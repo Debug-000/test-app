@@ -58,7 +58,7 @@ jobs:
 
       # **Step 2: Run Garbage Collection**
       - name: Trigger Garbage Collection
-        run: doctl registry garbage-collection start --force
+        run: doctl registry garbage-collection start --include-untagged-manifests testcluster
 
       # Set Kubernetes Context
       - name: Set Kubernetes Context
