@@ -1,0 +1,37 @@
+name: Deploy Admin to DigitalOcean Kubernetes
+
+on:
+  push:
+    branches:
+      - main # Runs when you push to main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Log in to DigitalOcean Container Registry
+        run: echo "${{ secrets.DO_ACCESS_TOKEN }}" | docker login -u "oauth" --password-stdin registry.digitalocean.com
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t registry.digitalocean.com/labrago/frontend:v1.1 -f ./admin/Dockerfile ./admin
+          docker push registry.digitalocean.com/labrago/frontend:v1.1
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install DigitalOcean CLI
+        run: curl -sL https://github.com/digitalocean/doctl/releases/latest/download/doctl-linux-amd64.tar.gz | tar -xzv && sudo mv doctl /usr/local/bin
+
+      - name: Authenticate with DigitalOcean
+        run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
+
+      - name: Set Kubernetes Context
+        run: doctl kubernetes cluster kubeconfig save your-cluster-name
+
+      - name: Restart Kubernetes Deployment
+        run: kubectl rollout restart deployment frontend-deployment
