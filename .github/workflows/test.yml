@@ -47,6 +47,9 @@ jobs:
       - name: Authenticate with DigitalOcean
         run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
 
+      - name: Trigger Garbage Collection
+        run: doctl registry garbage-collection start --force
+
       # Set Kubernetes Context
       - name: Set Kubernetes Context
         run: doctl kubernetes cluster kubeconfig save k8s-test-cluster
