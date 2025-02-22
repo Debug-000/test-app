@@ -30,8 +30,20 @@ jobs:
           # Download the doctl release directly from the fixed URL
           curl -sL https://github.com/digitalocean/doctl/releases/download/v1.100.0/doctl-linux-amd64.tar.gz -o doctl.tar.gz
 
+          # Check if the tar.gz file was downloaded successfully
+          if [ ! -f doctl.tar.gz ]; then
+            echo "Error: doctl.tar.gz was not downloaded."
+            exit 1
+          fi
+
           # Extract the contents
           tar -xzvf doctl.tar.gz
+
+          # Verify that the doctl binary exists
+          if [ ! -f doctl ]; then
+            echo "Error: doctl binary was not extracted."
+            exit 1
+          fi
 
           # Move the doctl binary to the correct location
           sudo mv doctl /usr/local/bin/
