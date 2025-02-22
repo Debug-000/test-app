@@ -50,7 +50,7 @@ jobs:
       # **Step 1: Find and Delete Untagged Images**
       - name: Delete untagged images
         run: |
-          REPO_NAME="test"  # Change this to match your repo
+          REPO_NAME="testcluster"
           for DIGEST in $(doctl registry repository list-manifests $REPO_NAME --format Digest,Tags --no-header | awk '$2 == "" { print $1 }'); do
             echo "Deleting untagged image: $DIGEST"
             doctl registry repository delete-manifest $REPO_NAME --manifest-digest sha256:$DIGEST --force
@@ -58,7 +58,7 @@ jobs:
 
       # **Step 2: Run Garbage Collection**
       - name: Trigger Garbage Collection
-        run: doctl registry garbage-collection start --force --wait
+        run: doctl registry garbage-collection start --force
 
       # Set Kubernetes Context
       - name: Set Kubernetes Context
