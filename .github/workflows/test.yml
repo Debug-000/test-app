@@ -47,16 +47,18 @@ jobs:
       - name: Authenticate with DigitalOcean
         run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
 
-      - name: Trigger Garbage Collection
-        run: doctl registry garbage-collection start --force
-
-      - name: Clean up untagged images
+      # **Step 1: Find and Delete Untagged Images**
+      - name: Delete untagged images
         run: |
-          REPO_NAME="test" # Change this to match your repository name
+          REPO_NAME="test"  # Change this to match your repo
           for DIGEST in $(doctl registry repository list-manifests $REPO_NAME --format Digest,Tags --no-header | awk '$2 == "" { print $1 }'); do
             echo "Deleting untagged image: $DIGEST"
             doctl registry repository delete-manifest $REPO_NAME --manifest-digest sha256:$DIGEST --force
           done
+
+      # **Step 2: Run Garbage Collection**
+      - name: Trigger Garbage Collection
+        run: doctl registry garbage-collection start --force
 
       # Set Kubernetes Context
       - name: Set Kubernetes Context
