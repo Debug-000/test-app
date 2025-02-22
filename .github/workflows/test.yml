@@ -21,25 +21,29 @@ jobs:
           docker push registry.digitalocean.com/testcluster/test:v1.1
 
   deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      # Install DigitalOcean CLI
-      - name: Install DigitalOcean CLI
-        run: |
-          curl -sL https://github.com/digitalocean/doctl/releases/download/v1.100.0/doctl-linux-amd64.tar.gz -o doctl.tar.gz
-          tar -xzvf doctl.tar.gz
-          sudo mv doctl /usr/local/bin/
-          doctl version  # Verify installation
+  needs: build-and-push
+  runs-on: ubuntu-latest
+  steps:
+    # Install DigitalOcean CLI
+    - name: Install DigitalOcean CLI
+      run: |
+        # Get the latest release URL from GitHub API
+        LATEST_RELEASE=$(curl -s https://api.github.com/repos/digitalocean/doctl/releases/latest | jq -r '.assets[] | select(.name | test("doctl-linux-amd64.tar.gz")) | .browser_download_url')
 
-      # Authenticate with DigitalOcean
-      - name: Authenticate with DigitalOcean
-        run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
+        # Download and install doctl
+        curl -sL $LATEST_RELEASE -o doctl.tar.gz
+        tar -xzvf doctl.tar.gz
+        sudo mv doctl /usr/local/bin/
+        doctl version  # Verify installation
 
-      # Set Kubernetes Context
-      - name: Set Kubernetes Context
-        run: doctl kubernetes cluster kubeconfig save k8s-test-cluster
+    # Authenticate with DigitalOcean
+    - name: Authenticate with DigitalOcean
+      run: doctl auth init --access-token "${{ secrets.DO_ACCESS_TOKEN }}"
 
-      # Restart Kubernetes Deployment
-      - name: Restart Kubernetes Deployment
-        run: kubectl rollout restart deployment test-deployment
+    # Set Kubernetes Context
+    - name: Set Kubernetes Context
+      run: doctl kubernetes cluster kubeconfig save k8s-test-cluster
+
+    # Restart Kubernetes Deployment
+    - name: Restart Kubernetes Deployment
+      run: kubectl rollout restart deployment test-deployment
